@@ -1,0 +1,1634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Study Nook 🌱 Personal Study Dashboard</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Nunito:wght@400;600;700;800&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        sage: {
+                            50: '#f4f8f5',
+                            100: '#e8f0eb',
+                            200: '#d1e1d6',
+                            300: '#a3c9a8',
+                            400: '#88ab8e',
+                            500: '#6b8e71',
+                            600: '#527258',
+                            700: '#3e5643',
+                        },
+                        blush: {
+                            50: '#fff5f6',
+                            100: '#ffe5ec',
+                            200: '#fcd5ce',
+                            300: '#f4acb7',
+                            400: '#ea8c9a',
+                            500: '#d96b7d',
+                        },
+                        charcoal: '#2d3748',
+                        softbg: '#f8faf7'
+                    },
+                    fontFamily: {
+                        sans: ['Quicksand', 'Nunito', 'sans-serif'],
+                        cute: ['Caveat', 'cursive'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <!-- html2canvas for image generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <style>
+        /* Custom Styling & Scrollbars */
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background-color: #f8faf7;
+            color: #2d3748;
+        }
+
+        /* Glassmorphism utility */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f2;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #a3c9a8;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #88ab8e;
+        }
+
+        /* Pulsing Timer Animation */
+        @keyframes pulse-soft {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.02); opacity: 0.95; }
+        }
+        .timer-active {
+            animation: pulse-soft 3s infinite ease-in-out;
+        }
+
+        /* Active Nav item indicator */
+        .nav-link.active {
+            background-color: #e8f0eb;
+            color: #527258;
+            font-weight: 700;
+        }
+
+        /* Heatmap Grid */
+        .heatmap-grid {
+            display: grid;
+            grid-template-columns: repeat(31, minmax(0, 1fr));
+            gap: 4px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col md:flex-row antialiased selection:bg-blush-200">
+
+    <!-- DESKTOP SIDEBAR NAVIGATION -->
+    <aside class="hidden md:flex flex-col w-64 bg-white border-r border-sage-100 p-5 justify-between sticky top-0 h-screen z-20">
+        <div>
+            <!-- App Logo/Header -->
+            <div class="flex items-center gap-3 px-2 py-3 mb-6">
+                <div class="w-10 h-10 rounded-2xl bg-sage-200 flex items-center justify-center text-sage-600 text-xl shadow-sm">
+                    🌱
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg text-sage-700 leading-tight">My Study Nook</h1>
+                    <span class="text-xs font-cute text-blush-400 text-base">your calm space ✨</span>
+                </div>
+            </div>
+
+            <!-- Nav Links -->
+            <nav class="space-y-1.5" id="desktopNav">
+                <button onclick="switchTab('dashboard')" data-tab="dashboard" class="nav-link active w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-left text-sm text-charcoal hover:bg-sage-50 transition">
+                    <i class="fa-solid fa-house text-sage-400 w-5"></i> Dashboard
+                </button>
+                <button onclick="switchTab('timer')" data-tab="timer" class="nav-link w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-left text-sm text-charcoal hover:bg-sage-50 transition">
+                    <i class="fa-solid fa-stopwatch text-sage-400 w-5"></i> Study Timer
+                </button>
+                <button onclick="switchTab('analytics')" data-tab="analytics" class="nav-link w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-left text-sm text-charcoal hover:bg-sage-50 transition">
+                    <i class="fa-solid fa-chart-pie text-sage-400 w-5"></i> Analytics
+                </button>
+                <button onclick="switchTab('tasks')" data-tab="tasks" class="nav-link w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-left text-sm text-charcoal hover:bg-sage-50 transition">
+                    <i class="fa-solid fa-list-check text-sage-400 w-5"></i> Tasks & Planner
+                </button>
+                <button onclick="switchTab('subjects')" data-tab="subjects" class="nav-link w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-left text-sm text-charcoal hover:bg-sage-50 transition">
+                    <i class="fa-solid fa-book-bookmark text-sage-400 w-5"></i> Subjects
+                </button>
+                <button onclick="switchTab('rewards')" data-tab="rewards" class="nav-link w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-left text-sm text-charcoal hover:bg-sage-50 transition">
+                    <i class="fa-solid fa-gift text-sage-400 w-5"></i> Rewards & Breaks
+                </button>
+                <button onclick="switchTab('journal')" data-tab="journal" class="nav-link w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-left text-sm text-charcoal hover:bg-sage-50 transition">
+                    <i class="fa-solid fa-pen-nib text-sage-400 w-5"></i> Thoughts & Journal
+                </button>
+                <button onclick="switchTab('settings')" data-tab="settings" class="nav-link w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-left text-sm text-charcoal hover:bg-sage-50 transition">
+                    <i class="fa-solid fa-gear text-sage-400 w-5"></i> Settings
+                </button>
+            </nav>
+        </div>
+
+        <!-- Quick Profile Card at Sidebar Bottom -->
+        <div class="bg-sage-50 p-3 rounded-2xl border border-sage-100 flex items-center gap-3">
+            <div class="w-9 h-9 rounded-full bg-blush-200 text-blush-500 flex items-center justify-center font-bold text-sm" id="sidebarAvatar">
+                S
+            </div>
+            <div class="flex-1 overflow-hidden">
+                <p class="text-xs text-gray-500">Studying as</p>
+                <p class="text-sm font-bold text-sage-700 truncate" id="sidebarUserName">Shahu</p>
+            </div>
+            <button onclick="switchTab('settings')" class="text-gray-400 hover:text-sage-600"><i class="fa-solid fa-angle-right"></i></button>
+        </div>
+    </aside>
+
+    <!-- MOBILE BOTTOM NAVIGATION -->
+    <div class="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-sage-100 px-2 py-2 flex justify-around items-center z-40">
+        <button onclick="switchTab('dashboard')" data-tab="dashboard" class="mobile-nav-link text-sage-600 flex flex-col items-center p-1 text-xs">
+            <i class="fa-solid fa-house text-lg"></i>
+            <span class="text-[10px] mt-0.5">Home</span>
+        </button>
+        <button onclick="switchTab('timer')" data-tab="timer" class="mobile-nav-link text-gray-400 flex flex-col items-center p-1 text-xs">
+            <i class="fa-solid fa-stopwatch text-lg"></i>
+            <span class="text-[10px] mt-0.5">Timer</span>
+        </button>
+        <button onclick="switchTab('tasks')" data-tab="tasks" class="mobile-nav-link text-gray-400 flex flex-col items-center p-1 text-xs">
+            <i class="fa-solid fa-list-check text-lg"></i>
+            <span class="text-[10px] mt-0.5">Tasks</span>
+        </button>
+        <button onclick="switchTab('analytics')" data-tab="analytics" class="mobile-nav-link text-gray-400 flex flex-col items-center p-1 text-xs">
+            <i class="fa-solid fa-chart-pie text-lg"></i>
+            <span class="text-[10px] mt-0.5">Stats</span>
+        </button>
+        <button onclick="switchTab('journal')" data-tab="journal" class="mobile-nav-link text-gray-400 flex flex-col items-center p-1 text-xs">
+            <i class="fa-solid fa-pen-nib text-lg"></i>
+            <span class="text-[10px] mt-0.5">Journal</span>
+        </button>
+        <button onclick="switchTab('settings')" data-tab="settings" class="mobile-nav-link text-gray-400 flex flex-col items-center p-1 text-xs">
+            <i class="fa-solid fa-gear text-lg"></i>
+            <span class="text-[10px] mt-0.5">More</span>
+        </button>
+    </div>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 flex flex-col min-w-0 pb-20 md:pb-8">
+        <!-- TOP HEADER BAR (CLOCK & STREAK) -->
+        <header class="bg-white/80 backdrop-blur-sm border-b border-sage-100 px-6 py-4 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-10">
+            <div>
+                <h2 class="text-xs font-semibold text-sage-500 uppercase tracking-wider" id="headerGreeting">Good Morning 🌿</h2>
+                <div class="text-2xl font-bold text-sage-700 font-mono tracking-tight" id="digitalClock">00:00:00 AM</div>
+                <div class="text-xs text-gray-500 font-medium" id="digitalDate">Tuesday, September 15</div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <!-- Streak Badge -->
+                <div class="flex items-center gap-2 bg-blush-100 text-blush-500 px-3 py-1.5 rounded-full border border-blush-200 text-sm font-semibold shadow-sm">
+                    <span>🔥</span>
+                    <span id="streakCount">0 Day Streak</span>
+                </div>
+                <!-- Quick Share Post Button -->
+                <button onclick="openShareModal()" class="bg-sage-100 hover:bg-sage-200 text-sage-700 px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition">
+                    <i class="fa-solid fa-share-nodes"></i> Share Today
+                </button>
+            </div>
+        </header>
+
+        <!-- VIEWS WRAPPER -->
+        <div class="p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto space-y-6">
+
+            <!-- 1. DASHBOARD VIEW -->
+            <section id="view-dashboard" class="view-tab space-y-6">
+                <!-- Top Welcome Banner -->
+                <div class="bg-gradient-to-r from-sage-100 via-sage-50 to-blush-100 p-6 rounded-3xl border border-sage-200 shadow-sm relative overflow-hidden">
+                    <div class="relative z-10 max-w-xl">
+                        <span class="bg-white/70 px-3 py-1 rounded-full text-xs font-semibold text-sage-600 mb-3 inline-block">Welcome back ✨</span>
+                        <h2 class="text-2xl sm:text-3xl font-bold text-sage-700 mb-2">Ready for a peaceful study session, <span id="dashName">Shahu</span>?</h2>
+                        <p class="text-sm text-gray-600 mb-4 font-medium">Take a deep breath. Focus on progress, not perfection. Every minute counts!</p>
+                        <button onclick="switchTab('timer')" class="bg-sage-400 hover:bg-sage-500 text-white font-semibold px-5 py-2.5 rounded-2xl shadow-sm flex items-center gap-2 transition transform active:scale-95">
+                            <i class="fa-solid fa-play"></i> Start Studying Now
+                        </button>
+                    </div>
+                    <!-- Cute Background Accent -->
+                    <div class="absolute -right-4 -bottom-4 text-9xl opacity-20 pointer-events-none select-none">🌱</div>
+                </div>
+
+                <!-- Main Grid Overview -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    
+                    <!-- Today's Study Progress Ring Card -->
+                    <div class="bg-white p-6 rounded-3xl border border-sage-100 shadow-sm flex flex-col items-center justify-center text-center">
+                        <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">Today's Study Goal</h3>
+                        
+                        <div class="relative w-44 h-44 flex items-center justify-center">
+                            <!-- Circular SVG Gauge -->
+                            <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                                <path class="text-sage-100" stroke-width="3.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                                <path id="goalProgressRing" class="text-sage-400 stroke-current transition-all duration-1000 ease-out" stroke-linecap="round" stroke-width="3.5" stroke-dasharray="0, 100" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                            </svg>
+                            <div class="absolute flex flex-col items-center">
+                                <span class="text-2xl font-bold text-sage-700" id="dashTodayTime">00h 00m</span>
+                                <span class="text-xs text-gray-400 mt-0.5">Goal: <span id="dashGoalTarget">04h 00m</span></span>
+                                <span class="text-xs font-bold text-blush-400 mt-1" id="dashGoalPercent">0%</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 flex gap-2 w-full">
+                            <button onclick="switchTab('timer')" class="flex-1 bg-sage-50 hover:bg-sage-100 text-sage-600 py-2 rounded-xl text-xs font-semibold transition">
+                                <i class="fa-solid fa-stopwatch mr-1"></i> Timer
+                            </button>
+                            <button onclick="switchTab('settings')" class="flex-1 bg-gray-50 hover:bg-gray-100 text-gray-600 py-2 rounded-xl text-xs font-semibold transition">
+                                <i class="fa-solid fa-sliders mr-1"></i> Edit Goal
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Quick Stats Cards & Donut Chart -->
+                    <div class="bg-white p-6 rounded-3xl border border-sage-100 shadow-sm md:col-span-2 flex flex-col justify-between">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider">Subject Breakdown Today</h3>
+                            <span class="text-xs text-sage-500 font-semibold" id="dashSessionCount">0 sessions</span>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
+                            <div class="h-44 relative flex items-center justify-center">
+                                <canvas id="dashSubjectChart"></canvas>
+                                <div id="dashEmptyChartMsg" class="absolute inset-0 flex flex-col items-center justify-center text-center p-4">
+                                    <span class="text-2xl">📚</span>
+                                    <p class="text-xs text-gray-400 mt-1">No sessions logged today yet.</p>
+                                </div>
+                            </div>
+
+                            <div class="space-y-3">
+                                <div class="p-3 rounded-2xl bg-sage-50 border border-sage-100 flex items-center justify-between">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="w-7 h-7 rounded-xl bg-sage-200 text-sage-600 flex items-center justify-center text-xs">🏆</div>
+                                        <div>
+                                            <p class="text-[10px] text-gray-400 uppercase font-bold">Top Subject</p>
+                                            <p class="text-xs font-bold text-sage-700" id="dashTopSubject">None yet</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="p-3 rounded-2xl bg-blush-50 border border-blush-100 flex items-center justify-between">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="w-7 h-7 rounded-xl bg-blush-200 text-blush-500 flex items-center justify-center text-xs">⚡</div>
+                                        <div>
+                                            <p class="text-[10px] text-gray-400 uppercase font-bold">Avg Session</p>
+                                            <p class="text-xs font-bold text-charcoal" id="dashAvgSession">0 mins</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tasks Overview & Recent Thoughts Section -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Today's Tasks Summary -->
+                    <div class="bg-white p-6 rounded-3xl border border-sage-100 shadow-sm space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h3 class="font-bold text-sage-700 flex items-center gap-2">
+                                <i class="fa-solid fa-square-check text-sage-400"></i> Today's Tasks
+                            </h3>
+                            <button onclick="switchTab('tasks')" class="text-xs font-semibold text-blush-400 hover:text-blush-500">View All →</button>
+                        </div>
+                        <div class="space-y-2" id="dashTaskList">
+                            <!-- Populated via JS -->
+                        </div>
+                    </div>
+
+                    <!-- Latest Thought / Journal Prompt -->
+                    <div class="bg-white p-6 rounded-3xl border border-sage-100 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <h3 class="font-bold text-sage-700 flex items-center gap-2">
+                                    <i class="fa-solid fa-quote-left text-blush-300"></i> Latest Reflection
+                                </h3>
+                                <button onclick="switchTab('journal')" class="text-xs font-semibold text-blush-400 hover:text-blush-500">Journal →</button>
+                            </div>
+                            <div id="dashLatestThought" class="p-4 rounded-2xl bg-blush-50/50 border border-blush-100 italic text-sm text-gray-600 font-cute text-lg">
+                                "Your study story starts here 🌱 Write down your first thought or victory today."
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-gray-100 flex justify-between items-center text-xs text-gray-400">
+                            <span>Keep your mind calm & centered</span>
+                            <button onclick="openNewThoughtModal()" class="text-sage-600 font-semibold hover:underline">+ New Thought</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. STUDY TIMER VIEW -->
+            <section id="view-timer" class="view-tab space-y-6 hidden">
+                <div class="bg-white p-6 sm:p-8 rounded-3xl border border-sage-100 shadow-sm text-center max-w-3xl mx-auto space-y-6">
+                    
+                    <!-- Mode Switcher (Pomodoro Presets vs Stopwatch) -->
+                    <div class="inline-flex bg-sage-50 p-1 rounded-2xl border border-sage-100">
+                        <button onclick="setTimerMode('stopwatch')" id="btnModeStopwatch" class="px-4 py-1.5 rounded-xl text-xs font-bold text-sage-700 bg-white shadow-sm transition">Stopwatch</button>
+                        <button onclick="setTimerMode('25')" id="btnMode25" class="px-4 py-1.5 rounded-xl text-xs font-bold text-gray-500 hover:text-sage-700 transition">25m Pomodoro</button>
+                        <button onclick="setTimerMode('45')" id="btnMode45" class="px-4 py-1.5 rounded-xl text-xs font-bold text-gray-500 hover:text-sage-700 transition">45m Focus</button>
+                        <button onclick="setTimerMode('custom')" id="btnModeCustom" class="px-4 py-1.5 rounded-xl text-xs font-bold text-gray-500 hover:text-sage-700 transition">Custom Target</button>
+                    </div>
+
+                    <!-- Subject Picker Pill Selection -->
+                    <div>
+                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Select Active Subject</p>
+                        <div class="flex flex-wrap justify-center gap-2" id="timerSubjectPills">
+                            <!-- JS Inject Pills -->
+                        </div>
+                    </div>
+
+                    <!-- Big Cute Timer Clock Display -->
+                    <div class="py-8 my-2 bg-sage-50/60 rounded-3xl border border-sage-100 relative overflow-hidden" id="timerBox">
+                        <span class="text-xs font-bold uppercase tracking-widest text-sage-500 mb-2 block" id="timerLabel">Study Duration</span>
+                        <div class="text-6xl sm:text-7xl font-bold font-mono text-sage-700 tracking-tight" id="timerDisplay">
+                            00:00:00
+                        </div>
+                        <p class="text-xs text-gray-400 mt-2 font-medium" id="timerSubjectStatus">Subject: Physics</p>
+                    </div>
+
+                    <!-- Main Action Buttons -->
+                    <div class="flex items-center justify-center gap-4">
+                        <button onclick="toggleTimer()" id="btnStartPause" class="w-36 py-3.5 bg-sage-400 hover:bg-sage-500 text-white font-bold rounded-2xl shadow-sm text-base flex items-center justify-center gap-2 transition transform active:scale-95">
+                            <i class="fa-solid fa-play"></i> <span>Start</span>
+                        </button>
+                        <button onclick="stopTimer()" id="btnStop" class="w-36 py-3.5 bg-blush-300 hover:bg-blush-400 text-white font-bold rounded-2xl shadow-sm text-base flex items-center justify-center gap-2 transition transform active:scale-95">
+                            <i class="fa-solid fa-square"></i> <span>Finish</span>
+                        </button>
+                        <button onclick="resetTimer()" class="p-3.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-2xl transition" title="Reset Timer">
+                            <i class="fa-solid fa-rotate-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. ANALYTICS VIEW -->
+            <section id="view-analytics" class="view-tab space-y-6 hidden">
+                <!-- Analytics Header & Tab Switcher -->
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-sage-700">Digital Wellbeing & Study Stats</h2>
+                        <p class="text-xs text-gray-500">Understand your study habits and celebrate your consistency 🌱</p>
+                    </div>
+                    <div class="inline-flex bg-white p-1 rounded-2xl border border-sage-100 shadow-sm">
+                        <button onclick="switchAnalyticsPeriod('week')" id="tabAnaWeek" class="px-4 py-1.5 rounded-xl text-xs font-bold bg-sage-100 text-sage-700">This Week</button>
+                        <button onclick="switchAnalyticsPeriod('month')" id="tabAnaMonth" class="px-4 py-1.5 rounded-xl text-xs font-bold text-gray-500">This Month</button>
+                    </div>
+                </div>
+
+                <!-- Past vs Present Comparison Callout -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="bg-white p-5 rounded-3xl border border-sage-100 shadow-sm">
+                        <p class="text-xs font-bold text-gray-400 uppercase">Today vs Yesterday</p>
+                        <h4 class="text-2xl font-bold text-sage-700 mt-1" id="cmpToday">0h 0m</h4>
+                        <p class="text-xs text-sage-600 mt-1 font-medium" id="cmpTodayDelta">+0m vs yesterday 🌱</p>
+                    </div>
+                    <div class="bg-white p-5 rounded-3xl border border-sage-100 shadow-sm">
+                        <p class="text-xs font-bold text-gray-400 uppercase">This Week Total</p>
+                        <h4 class="text-2xl font-bold text-sage-700 mt-1" id="cmpWeek">0h 0m</h4>
+                        <p class="text-xs text-gray-500 mt-1 font-medium" id="cmpWeekBest">Best Day: Saturday</p>
+                    </div>
+                    <div class="bg-white p-5 rounded-3xl border border-sage-100 shadow-sm">
+                        <p class="text-xs font-bold text-gray-400 uppercase">Daily Average</p>
+                        <h4 class="text-2xl font-bold text-sage-700 mt-1" id="cmpAvg">0h 0m</h4>
+                        <p class="text-xs text-blush-400 mt-1 font-medium">Keep up the calm rhythm ✨</p>
+                    </div>
+                </div>
+
+                <!-- 7-Day / Monthly Bar Chart Section -->
+                <div class="bg-white p-6 rounded-3xl border border-sage-100 shadow-sm">
+                    <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4" id="anaChartTitle">7-Day Study Duration</h3>
+                    <div class="h-64 relative">
+                        <canvas id="anaBarChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- 24-Hour Timeline Grid Activity -->
+                <div class="bg-white p-6 rounded-3xl border border-sage-100 shadow-sm space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider">Today's 24-Hour Activity Timeline</h3>
+                        <span class="text-xs text-gray-400">When do you study best?</span>
+                    </div>
+                    <div class="grid grid-cols-12 gap-1 text-center text-[10px] text-gray-400 font-mono" id="timeline24Hours">
+                        <!-- Populated JS -->
+                    </div>
+                </div>
+
+                <!-- Monthly Calendar Heatmap -->
+                <div class="bg-white p-6 rounded-3xl border border-sage-100 shadow-sm space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider">Monthly Study Heatmap</h3>
+                        <div class="flex items-center gap-1 text-xs text-gray-400">
+                            <span>Less</span>
+                            <span class="w-3 h-3 bg-sage-50 rounded"></span>
+                            <span class="w-3 h-3 bg-sage-200 rounded"></span>
+                            <span class="w-3 h-3 bg-sage-400 rounded"></span>
+                            <span class="w-3 h-3 bg-sage-600 rounded"></span>
+                            <span>More</span>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <div class="heatmap-grid min-w-[600px] pt-2" id="monthlyHeatmap">
+                            <!-- Populated JS -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. TASKS & PLANNER VIEW -->
+            <section id="view-tasks" class="view-tab space-y-6 hidden">
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-sage-700">Study Planner & To-Do</h2>
+                        <p class="text-xs text-gray-500">Organize your assignments, revisions, and practice tasks 🌱</p>
+                    </div>
+                    <button onclick="openAddTaskModal()" class="bg-sage-400 hover:bg-sage-500 text-white font-bold px-4 py-2 rounded-2xl text-xs flex items-center gap-2 transition shadow-sm">
+                        <i class="fa-solid fa-plus"></i> Add New Task
+                    </button>
+                </div>
+
+                <!-- Date Navigator Pill Bar -->
+                <div class="bg-white p-4 rounded-3xl border border-sage-100 shadow-sm flex items-center justify-between">
+                    <button onclick="shiftPlannerDate(-1)" class="p-2 text-sage-600 hover:bg-sage-50 rounded-xl transition text-xs font-bold">
+                        <i class="fa-solid fa-chevron-left mr-1"></i> Yesterday
+                    </button>
+                    <span class="text-sm font-bold text-sage-700" id="plannerCurrentDate">Today (Sep 15)</span>
+                    <button onclick="shiftPlannerDate(1)" class="p-2 text-sage-600 hover:bg-sage-50 rounded-xl transition text-xs font-bold">
+                        Tomorrow <i class="fa-solid fa-chevron-right ml-1"></i>
+                    </button>
+                </div>
+
+                <!-- Filter Tabs -->
+                <div class="flex gap-2">
+                    <button onclick="filterTasks('all')" id="btnFilterAll" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-sage-100 text-sage-700">All</button>
+                    <button onclick="filterTasks('today')" id="btnFilterToday" class="px-3 py-1.5 rounded-xl text-xs font-bold text-gray-500 hover:bg-sage-50">Today</button>
+                    <button onclick="filterTasks('upcoming')" id="btnFilterUpcoming" class="px-3 py-1.5 rounded-xl text-xs font-bold text-gray-500 hover:bg-sage-50">Upcoming</button>
+                    <button onclick="filterTasks('completed')" id="btnFilterCompleted" class="px-3 py-1.5 rounded-xl text-xs font-bold text-gray-500 hover:bg-sage-50">Completed</button>
+                </div>
+
+                <!-- Task List Container -->
+                <div class="space-y-3" id="taskListContainer">
+                    <!-- Dynamic tasks inserted here -->
+                </div>
+            </section>
+
+            <!-- 5. SUBJECTS MANAGER VIEW -->
+            <section id="view-subjects" class="view-tab space-y-6 hidden">
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-sage-700">Subject Manager</h2>
+                        <p class="text-xs text-gray-500">Customize your subjects with soft color tags 🌱</p>
+                    </div>
+                    <button onclick="openAddSubjectModal()" class="bg-sage-400 hover:bg-sage-500 text-white font-bold px-4 py-2 rounded-2xl text-xs flex items-center gap-2 transition shadow-sm">
+                        <i class="fa-solid fa-plus"></i> Add Subject
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="subjectsGrid">
+                    <!-- JS Injected Subject Cards -->
+                </div>
+            </section>
+
+            <!-- 6. REWARDS & BREAK SYSTEM VIEW -->
+            <section id="view-rewards" class="view-tab space-y-6 hidden">
+                <div class="bg-white p-6 sm:p-8 rounded-3xl border border-sage-100 shadow-sm space-y-6">
+                    <div>
+                        <h2 class="text-xl font-bold text-sage-700">Break & Reward Center ✨</h2>
+                        <p class="text-xs text-gray-500">Configure what treat unlocks after finishing your focus sessions!</p>
+                    </div>
+
+                    <!-- Selected Reward Configuration Form -->
+                    <div class="space-y-4 max-w-xl">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Reward Type</label>
+                            <select id="rewardTypeSelect" onchange="toggleRewardInputs()" class="w-full p-3 rounded-2xl border border-sage-200 text-sm font-semibold focus:outline-none focus:border-sage-400">
+                                <option value="youtube">YouTube Video / Playlist</option>
+                                <option value="quote">Inspirational Quote Card</option>
+                                <option value="photo">Custom Photo Card</option>
+                                <option value="message">Personal Pamper Message</option>
+                            </select>
+                        </div>
+
+                        <div id="rewardInputYoutube">
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-2">YouTube Video or Playlist URL</label>
+                            <input type="url" id="rewardYoutubeUrl" placeholder="https://www.youtube.com/watch?v=..." class="w-full p-3 rounded-2xl border border-sage-200 text-sm focus:outline-none focus:border-sage-400">
+                            <p class="text-[11px] text-gray-400 mt-1">Supports regular videos, Shorts, and Playlist links!</p>
+                        </div>
+
+                        <div id="rewardInputPhoto" class="hidden">
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Image URL or Upload</label>
+                            <input type="url" id="rewardPhotoUrl" placeholder="https://images.unsplash.com/..." class="w-full p-3 rounded-2xl border border-sage-200 text-sm mb-2">
+                        </div>
+
+                        <div id="rewardInputMessage" class="hidden">
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Custom Note/Treat Message</label>
+                            <textarea id="rewardCustomText" placeholder="Great job! Take 10 minutes to grab tea and stretch 🍵" class="w-full p-3 rounded-2xl border border-sage-200 text-sm h-24 focus:outline-none focus:border-sage-400"></textarea>
+                        </div>
+
+                        <button onclick="saveRewardSettings()" class="bg-sage-400 hover:bg-sage-500 text-white font-bold px-6 py-2.5 rounded-2xl text-xs transition shadow-sm">
+                            Save Reward Settings
+                        </button>
+                    </div>
+
+                    <!-- Preview Box -->
+                    <div class="pt-6 border-t border-sage-100">
+                        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Reward Preview</h3>
+                        <div id="rewardPreviewBox" class="p-4 rounded-2xl bg-sage-50 border border-sage-100 min-h-[160px] flex items-center justify-center text-center">
+                            <!-- Preview Content via JS -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 7. THOUGHTS & JOURNAL VIEW -->
+            <section id="view-journal" class="view-tab space-y-6 hidden">
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-sage-700">Study Thoughts & Reflection Journal</h2>
+                        <p class="text-xs text-gray-500">Clear your mind, record discoveries, or jot down story ideas ✨</p>
+                    </div>
+                    <button onclick="openNewThoughtModal()" class="bg-sage-400 hover:bg-sage-500 text-white font-bold px-4 py-2 rounded-2xl text-xs flex items-center gap-2 transition shadow-sm">
+                        <i class="fa-solid fa-pen"></i> Write Thought
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="thoughtsGrid">
+                    <!-- Dynamically populated journal cards -->
+                </div>
+            </section>
+
+            <!-- 8. SETTINGS VIEW -->
+            <section id="view-settings" class="view-tab space-y-6 hidden">
+                <div class="bg-white p-6 sm:p-8 rounded-3xl border border-sage-100 shadow-sm space-y-8 max-w-2xl">
+                    <h2 class="text-xl font-bold text-sage-700">App Settings & Data Safety</h2>
+
+                    <!-- Profile Settings -->
+                    <div class="space-y-4">
+                        <h3 class="text-xs font-bold text-sage-500 uppercase tracking-wider">Profile</h3>
+                        <div>
+                            <label class="block text-xs text-gray-500 font-semibold mb-1">Display Name</label>
+                            <input type="text" id="settingDisplayName" class="w-full p-3 rounded-2xl border border-sage-200 text-sm font-semibold focus:outline-none focus:border-sage-400">
+                        </div>
+                    </div>
+
+                    <!-- Study Goal Settings -->
+                    <div class="space-y-4 pt-4 border-t border-sage-100">
+                        <h3 class="text-xs font-bold text-sage-500 uppercase tracking-wider">Study Goals & Durations</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs text-gray-500 font-semibold mb-1">Daily Study Target (Hours)</label>
+                                <input type="number" id="settingDailyGoalHours" min="1" max="24" class="w-full p-3 rounded-2xl border border-sage-200 text-sm font-semibold">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-500 font-semibold mb-1">Default Break Duration (Mins)</label>
+                                <input type="number" id="settingBreakMins" min="1" max="60" class="w-full p-3 rounded-2xl border border-sage-200 text-sm font-semibold">
+                            </div>
+                        </div>
+                    </div>
+
+                    <button onclick="saveGeneralSettings()" class="bg-sage-400 hover:bg-sage-500 text-white font-bold px-6 py-2.5 rounded-2xl text-xs transition shadow-sm">
+                        Save Profile & Goals
+                    </button>
+
+                    <!-- Data Backup & Safety -->
+                    <div class="space-y-4 pt-6 border-t border-sage-100">
+                        <h3 class="text-xs font-bold text-sage-500 uppercase tracking-wider">Data Safety (LocalStorage)</h3>
+                        <div class="flex flex-wrap gap-3">
+                            <button onclick="exportDataJSON()" class="bg-sage-50 hover:bg-sage-100 text-sage-700 font-bold px-4 py-2.5 rounded-2xl text-xs border border-sage-200 transition">
+                                <i class="fa-solid fa-download mr-1"></i> Export Data (JSON)
+                            </button>
+                            <label class="bg-sage-50 hover:bg-sage-100 text-sage-700 font-bold px-4 py-2.5 rounded-2xl text-xs border border-sage-200 cursor-pointer transition">
+                                <i class="fa-solid fa-upload mr-1"></i> Import Data (JSON)
+                                <input type="file" id="importFileInput" accept=".json" onchange="importDataJSON(event)" class="hidden">
+                            </label>
+                            <button onclick="confirmResetData()" class="bg-blush-100 hover:bg-blush-200 text-blush-500 font-bold px-4 py-2.5 rounded-2xl text-xs transition">
+                                <i class="fa-solid fa-trash mr-1"></i> Reset All Data
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- REWARD BREAK MODAL SCREEN -->
+    <div id="rewardModal" class="fixed inset-0 bg-black/60 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-2xl w-full p-6 space-y-4 text-center border border-sage-100 shadow-2xl relative overflow-hidden">
+            <div class="text-4xl">🎉</div>
+            <h3 class="text-2xl font-bold text-sage-700">Study Session Complete!</h3>
+            <p class="text-xs text-gray-500 font-medium" id="rewardModalSubtitle">You did amazing work. Time for your reward!</p>
+            
+            <!-- Break Timer Indicator -->
+            <div class="bg-blush-50 text-blush-500 px-4 py-2 rounded-2xl text-sm font-bold inline-block">
+                Break Time Left: <span id="rewardCountdown">05:00</span>
+            </div>
+
+            <!-- Embedded Reward Container -->
+            <div id="rewardModalEmbed" class="w-full min-h-[250px] sm:min-h-[320px] rounded-2xl bg-black/5 flex items-center justify-center overflow-hidden">
+                <!-- Media dynamically inserted -->
+            </div>
+
+            <button onclick="closeRewardModal()" class="w-full py-3 bg-sage-400 hover:bg-sage-500 text-white font-bold rounded-2xl transition">
+                Back to Studying 🌱
+            </button>
+        </div>
+    </div>
+
+    <!-- SHARE POST MODAL -->
+    <div id="shareModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 border border-sage-100 shadow-2xl">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-sage-700">Share Study Progress</h3>
+                <button onclick="closeShareModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <!-- Styled Card Captured by html2canvas -->
+            <div id="shareableCard" class="bg-gradient-to-br from-sage-100 via-white to-blush-100 p-6 rounded-3xl border border-sage-200 shadow-sm space-y-4 text-center">
+                <div class="flex justify-between items-center border-b border-sage-200/60 pb-3">
+                    <span class="text-xs font-bold text-sage-700">🌱 TODAY'S STUDY LOG</span>
+                    <span class="text-xs text-gray-500" id="shareCardDate">Sep 15, 2026</span>
+                </div>
+                <div>
+                    <div class="text-4xl font-bold font-mono text-sage-700" id="shareCardHours">08h 24m</div>
+                    <p class="text-xs text-blush-500 font-bold mt-1" id="shareCardGoal">Goal Reached! ✨</p>
+                </div>
+                <div class="bg-white/80 p-3 rounded-2xl space-y-1.5 text-left text-xs" id="shareCardSubjects">
+                    <!-- Subject stats -->
+                </div>
+                <p class="text-xs font-cute text-base text-sage-600 italic">"Focus on progress, step by step." — <span id="shareCardAuthor">Shahu</span></p>
+            </div>
+
+            <div class="flex gap-2">
+                <button onclick="downloadShareCard()" class="flex-1 bg-sage-400 hover:bg-sage-500 text-white py-2.5 rounded-2xl text-xs font-bold transition">
+                    <i class="fa-solid fa-download mr-1"></i> Download PNG
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL FOR ADD TASK -->
+    <div id="addTaskModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 border border-sage-100 shadow-xl">
+            <h3 class="font-bold text-sage-700">Add New Task</h3>
+            <div class="space-y-3">
+                <input type="text" id="newTaskTitle" placeholder="Task title (e.g. Solve Math Chapter 3)" class="w-full p-3 rounded-2xl border border-sage-200 text-sm">
+                <select id="newTaskSubject" class="w-full p-3 rounded-2xl border border-sage-200 text-sm">
+                    <!-- Populated via JS -->
+                </select>
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="date" id="newTaskDate" class="p-3 rounded-2xl border border-sage-200 text-sm">
+                    <select id="newTaskPriority" class="p-3 rounded-2xl border border-sage-200 text-sm">
+                        <option value="Low">Low Priority</option>
+                        <option value="Medium" selected>Medium Priority</option>
+                        <option value="High">High Priority</option>
+                    </select>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="closeAddTaskModal()" class="px-4 py-2 bg-gray-100 text-gray-600 rounded-xl text-xs font-bold">Cancel</button>
+                <button onclick="saveNewTask()" class="px-4 py-2 bg-sage-400 text-white rounded-xl text-xs font-bold">Save Task</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL FOR NEW THOUGHT -->
+    <div id="newThoughtModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 border border-sage-100 shadow-xl">
+            <h3 class="font-bold text-sage-700">Write Thought / Reflection</h3>
+            <div class="space-y-3">
+                <input type="text" id="newThoughtTitle" placeholder="Title or Topic..." class="w-full p-3 rounded-2xl border border-sage-200 text-sm font-semibold">
+                <textarea id="newThoughtBody" placeholder="Write your reflection, story idea, or breakthrough..." class="w-full p-3 rounded-2xl border border-sage-200 text-sm h-32"></textarea>
+            </div>
+            <div class="flex justify-end gap-2">
+                <button onclick="closeNewThoughtModal()" class="px-4 py-2 bg-gray-100 text-gray-600 rounded-xl text-xs font-bold">Cancel</button>
+                <button onclick="saveNewThought()" class="px-4 py-2 bg-sage-400 text-white rounded-xl text-xs font-bold">Save Thought</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ==========================================================================
+           DATA PERSISTENCE & INITIAL STATE (LocalStorage)
+           ========================================================================== */
+        const STORAGE_KEY = 'my_study_nook_v1';
+
+        const defaultData = {
+            profile: {
+                name: 'Shahu',
+                dailyGoalHours: 4,
+                breakMins: 10,
+            },
+            subjects: [
+                { id: 'subj-1', name: 'Physics', color: '#88ab8e' },
+                { id: 'subj-2', name: 'Chemistry', color: '#f4acb7' },
+                { id: 'subj-3', name: 'Mathematics', color: '#a3c9a8' },
+                { id: 'subj-4', name: 'Biology', color: '#fcd5ce' },
+                { id: 'subj-5', name: 'English', color: '#cbd5e1' }
+            ],
+            sessions: [], // { id, subjectId, durationSec, timestamp }
+            tasks: [],    // { id, title, subjectId, date, priority, completed }
+            thoughts: [], // { id, title, body, timestamp }
+            rewards: {
+                type: 'youtube',
+                youtubeUrl: 'https://www.youtube.com/watch?v=5qap5aO4i9A',
+                photoUrl: '',
+                message: 'Take a calm breath and hydrate 🌱'
+            },
+            timerState: {
+                isRunning: false,
+                isPaused: false,
+                startTime: null,
+                elapsedBeforePause: 0,
+                activeSubjectId: 'subj-1',
+                targetMins: 0 // 0 = stopwatch
+            }
+        };
+
+        let appData = loadData();
+
+        function loadData() {
+            try {
+                const stored = localStorage.getItem(STORAGE_KEY);
+                return stored ? JSON.parse(stored) : defaultData;
+            } catch (e) {
+                console.error('Error loading state:', e);
+                return defaultData;
+            }
+        }
+
+        function saveData() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+            } catch (e) {
+                console.error('Error saving state:', e);
+            }
+        }
+
+        /* ==========================================================================
+           TAB SWITCHING & NAVIGATION LOGIC
+           ========================================================================== */
+        function switchTab(tabId) {
+            document.querySelectorAll('.view-tab').forEach(el => el.classList.add('hidden'));
+            const activeView = document.getElementById(`view-${tabId}`);
+            if (activeView) activeView.classList.remove('hidden');
+
+            // Desktop nav link highlight
+            document.querySelectorAll('#desktopNav .nav-link').forEach(btn => {
+                if (btn.getAttribute('data-tab') === tabId) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            // Mobile nav bar icon highlight
+            document.querySelectorAll('.mobile-nav-link').forEach(btn => {
+                if (btn.getAttribute('data-tab') === tabId) {
+                    btn.classList.add('text-sage-600');
+                    btn.classList.remove('text-gray-400');
+                } else {
+                    btn.classList.remove('text-sage-600');
+                    btn.classList.add('text-gray-400');
+                }
+            });
+
+            // Re-render specific views on tab open
+            if (tabId === 'dashboard') renderDashboard();
+            if (tabId === 'analytics') renderAnalytics();
+            if (tabId === 'tasks') renderTasks();
+            if (tabId === 'subjects') renderSubjects();
+            if (tabId === 'journal') renderJournal();
+        }
+
+        /* ==========================================================================
+           LIVE DIGITAL CLOCK & GREETING
+           ========================================================================== */
+        function updateClock() {
+            const now = new Date();
+            const hours = now.getHours();
+            const mins = String(now.getMinutes()).padStart(2, '0');
+            const secs = String(now.getSeconds()).padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            const displayHours = String(hours % 12 || 12).padStart(2, '0');
+
+            document.getElementById('digitalClock').textContent = `${displayHours}:${mins}:${secs} ${ampm}`;
+
+            const options = { weekday: 'long', month: 'long', day: 'numeric' };
+            document.getElementById('digitalDate').textContent = now.toLocaleDateString('en-US', options);
+
+            let greeting = 'Good Morning 🌿';
+            if (hours >= 12 && hours < 17) greeting = 'Good Afternoon 🌿';
+            else if (hours >= 17) greeting = 'Good Evening 🌿';
+            document.getElementById('headerGreeting').textContent = greeting;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        /* ==========================================================================
+           TIMER LOGIC (Resilient Timestamp-Based Timing)
+           ========================================================================== */
+        let timerInterval = null;
+
+        function renderTimerSubjectPills() {
+            const container = document.getElementById('timerSubjectPills');
+            container.innerHTML = '';
+            appData.subjects.forEach(subj => {
+                const isSelected = subj.id === appData.timerState.activeSubjectId;
+                const pill = document.createElement('button');
+                pill.className = `px-3 py-1.5 rounded-full text-xs font-bold transition flex items-center gap-1.5 ${
+                    isSelected ? 'bg-sage-400 text-white shadow-sm' : 'bg-sage-50 text-sage-700 hover:bg-sage-100'
+                }`;
+                pill.innerHTML = `<span class="w-2 h-2 rounded-full" style="background-color: ${subj.color}"></span> ${subj.name}`;
+                pill.onclick = () => {
+                    appData.timerState.activeSubjectId = subj.id;
+                    saveData();
+                    renderTimerSubjectPills();
+                    updateTimerStatusText();
+                };
+                container.appendChild(pill);
+            });
+            updateTimerStatusText();
+        }
+
+        function updateTimerStatusText() {
+            const activeSubj = appData.subjects.find(s => s.id === appData.timerState.activeSubjectId);
+            document.getElementById('timerSubjectStatus').textContent = `Active Subject: ${activeSubj ? activeSubj.name : 'None'}`;
+        }
+
+        function getElapsedSeconds() {
+            const st = appData.timerState;
+            if (!st.isRunning) return st.elapsedBeforePause;
+            if (st.isPaused) return st.elapsedBeforePause;
+            return st.elapsedBeforePause + Math.floor((Date.now() - st.startTime) / 1000);
+        }
+
+        function updateTimerUI() {
+            const elapsed = getElapsedSeconds();
+            const targetSecs = appData.timerState.targetMins * 60;
+
+            let displaySecs = elapsed;
+            if (targetSecs > 0) {
+                displaySecs = Math.max(0, targetSecs - elapsed);
+                if (displaySecs === 0 && appData.timerState.isRunning) {
+                    // Countdown complete! Trigger session finish and break modal
+                    stopTimer(true);
+                    return;
+                }
+            }
+
+            const h = String(Math.floor(displaySecs / 3600)).padStart(2, '0');
+            const m = String(Math.floor((displaySecs % 3600) / 60)).padStart(2, '0');
+            const s = String(displaySecs % 60).padStart(2, '0');
+
+            document.getElementById('timerDisplay').textContent = `${h}:${m}:${s}`;
+
+            const btnStart = document.getElementById('btnStartPause');
+            if (appData.timerState.isRunning && !appData.timerState.isPaused) {
+                btnStart.innerHTML = `<i class="fa-solid fa-pause"></i> <span>Pause</span>`;
+                btnStart.className = "w-36 py-3.5 bg-blush-400 hover:bg-blush-500 text-white font-bold rounded-2xl shadow-sm text-base flex items-center justify-center gap-2 transition";
+            } else {
+                btnStart.innerHTML = `<i class="fa-solid fa-play"></i> <span>${appData.timerState.isPaused ? 'Resume' : 'Start'}</span>`;
+                btnStart.className = "w-36 py-3.5 bg-sage-400 hover:bg-sage-500 text-white font-bold rounded-2xl shadow-sm text-base flex items-center justify-center gap-2 transition";
+            }
+        }
+
+        function toggleTimer() {
+            const st = appData.timerState;
+            if (!st.isRunning) {
+                // Start Timer
+                st.isRunning = true;
+                st.isPaused = false;
+                st.startTime = Date.now();
+            } else if (!st.isPaused) {
+                // Pause Timer
+                st.isPaused = true;
+                st.elapsedBeforePause += Math.floor((Date.now() - st.startTime) / 1000);
+            } else {
+                // Resume Timer
+                st.isPaused = false;
+                st.startTime = Date.now();
+            }
+            saveData();
+            startTimerTick();
+        }
+
+        function stopTimer(isAutoFinish = false) {
+            const elapsed = getElapsedSeconds();
+            if (elapsed > 10) { // Record session if > 10s
+                appData.sessions.push({
+                    id: 'sess-' + Date.now(),
+                    subjectId: appData.timerState.activeSubjectId,
+                    durationSec: elapsed,
+                    timestamp: Date.now()
+                });
+            }
+
+            // Reset state
+            appData.timerState.isRunning = false;
+            appData.timerState.isPaused = false;
+            appData.timerState.startTime = null;
+            appData.timerState.elapsedBeforePause = 0;
+            saveData();
+
+            if (timerInterval) clearInterval(timerInterval);
+            updateTimerUI();
+
+            if (elapsed > 10) {
+                triggerRewardModal();
+                checkGoalCelebration();
+            }
+        }
+
+        function resetTimer() {
+            appData.timerState.isRunning = false;
+            appData.timerState.isPaused = false;
+            appData.timerState.startTime = null;
+            appData.timerState.elapsedBeforePause = 0;
+            saveData();
+            if (timerInterval) clearInterval(timerInterval);
+            updateTimerUI();
+        }
+
+        function setTimerMode(mode) {
+            resetTimer();
+            if (mode === 'stopwatch') appData.timerState.targetMins = 0;
+            else if (mode === '25') appData.timerState.targetMins = 25;
+            else if (mode === '45') appData.timerState.targetMins = 45;
+            else if (mode === 'custom') {
+                const custom = prompt('Enter custom study duration in minutes:', '30');
+                if (custom && !isNaN(custom)) appData.timerState.targetMins = parseInt(custom);
+            }
+            saveData();
+            updateTimerUI();
+        }
+
+        function startTimerTick() {
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(updateTimerUI, 1000);
+            updateTimerUI();
+        }
+
+        /* ==========================================================================
+           DASHBOARD & STATS LOGIC
+           ========================================================================== */
+        let dashChartInstance = null;
+
+        function getTodaySessions() {
+            const startOfDay = new Date();
+            startOfDay.setHours(0,0,0,0);
+            return appData.sessions.filter(s => s.timestamp >= startOfDay.getTime());
+        }
+
+        function renderDashboard() {
+            document.getElementById('dashName').textContent = appData.profile.name;
+            document.getElementById('sidebarUserName').textContent = appData.profile.name;
+            document.getElementById('sidebarAvatar').textContent = appData.profile.name.charAt(0).toUpperCase();
+
+            // Calculate Today's study time
+            const todaySessions = getTodaySessions();
+            const totalSecs = todaySessions.reduce((acc, s) => acc + s.durationSec, 0);
+            const todayHours = totalSecs / 3600;
+            const goalHours = appData.profile.dailyGoalHours;
+
+            const h = Math.floor(totalSecs / 3600);
+            const m = Math.floor((totalSecs % 3600) / 60);
+            document.getElementById('dashTodayTime').textContent = `${String(h).padStart(2,'0')}h ${String(m).padStart(2,'0')}m`;
+            document.getElementById('dashGoalTarget').textContent = `${String(goalHours).padStart(2,'0')}h 00m`;
+
+            const percent = Math.min(100, Math.round((todayHours / goalHours) * 100));
+            document.getElementById('dashGoalPercent').textContent = `${percent}%`;
+
+            // SVG Circular Ring animation
+            const ring = document.getElementById('goalProgressRing');
+            ring.setAttribute('stroke-dasharray', `${percent}, 100`);
+
+            // Stats Cards
+            document.getElementById('dashSessionCount').textContent = `${todaySessions.length} session${todaySessions.length === 1 ? '' : 's'}`;
+
+            // Top Subject & Avg Session
+            if (todaySessions.length > 0) {
+                const subjectTotals = {};
+                todaySessions.forEach(s => {
+                    subjectTotals[s.subjectId] = (subjectTotals[s.subjectId] || 0) + s.durationSec;
+                });
+                const topSubjId = Object.keys(subjectTotals).reduce((a, b) => subjectTotals[a] > subjectTotals[b] ? a : b);
+                const topSubjObj = appData.subjects.find(sub => sub.id === topSubjId);
+                document.getElementById('dashTopSubject').textContent = topSubjObj ? topSubjObj.name : 'None';
+
+                const avgSecs = totalSecs / todaySessions.length;
+                document.getElementById('dashAvgSession').textContent = `${Math.round(avgSecs / 60)} mins`;
+            } else {
+                document.getElementById('dashTopSubject').textContent = 'None yet';
+                document.getElementById('dashAvgSession').textContent = '0 mins';
+            }
+
+            renderDashSubjectChart(todaySessions);
+            renderDashTasks();
+            renderDashJournal();
+            calculateStreak();
+        }
+
+        function renderDashSubjectChart(todaySessions) {
+            const ctx = document.getElementById('dashSubjectChart').getContext('2d');
+            const emptyMsg = document.getElementById('dashEmptyChartMsg');
+
+            if (todaySessions.length === 0) {
+                emptyMsg.classList.remove('hidden');
+                if (dashChartInstance) dashChartInstance.destroy();
+                return;
+            }
+            emptyMsg.classList.add('hidden');
+
+            const subjectTotals = {};
+            todaySessions.forEach(s => {
+                subjectTotals[s.subjectId] = (subjectTotals[s.subjectId] || 0) + (s.durationSec / 60);
+            });
+
+            const labels = [];
+            const data = [];
+            const colors = [];
+
+            Object.keys(subjectTotals).forEach(subjId => {
+                const subj = appData.subjects.find(s => s.id === subjId);
+                labels.push(subj ? subj.name : 'Unknown');
+                data.push(Math.round(subjectTotals[subjId]));
+                colors.push(subj ? subj.color : '#a3c9a8');
+            });
+
+            if (dashChartInstance) dashChartInstance.destroy();
+
+            dashChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors,
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    cutout: '70%'
+                }
+            });
+        }
+
+        function renderDashTasks() {
+            const container = document.getElementById('dashTaskList');
+            container.innerHTML = '';
+            const todayTasks = appData.tasks.slice(0, 3);
+
+            if (todayTasks.length === 0) {
+                container.innerHTML = `<p class="text-xs text-gray-400 italic">Nothing planned yet. Add your first task ✨</p>`;
+                return;
+            }
+
+            todayTasks.forEach(task => {
+                const item = document.createElement('div');
+                item.className = "p-2.5 rounded-2xl bg-sage-50/50 border border-sage-100 flex items-center justify-between text-xs";
+                item.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask('${task.id}')" class="rounded accent-sage-400">
+                        <span class="${task.completed ? 'line-through text-gray-400' : 'font-semibold text-gray-700'}">${task.title}</span>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function renderDashJournal() {
+            const container = document.getElementById('dashLatestThought');
+            if (appData.thoughts.length > 0) {
+                const latest = appData.thoughts[appData.thoughts.length - 1];
+                container.innerHTML = `<strong>"${latest.title}"</strong><br><span class="text-xs font-sans text-gray-500 mt-1 block">${latest.body}</span>`;
+            }
+        }
+
+        function calculateStreak() {
+            // Simplified consecutive days study streak logic
+            const activeDays = new Set();
+            appData.sessions.forEach(s => {
+                const d = new Date(s.timestamp).toDateString();
+                activeDays.add(d);
+            });
+            const streak = activeDays.size;
+            document.getElementById('streakCount').textContent = `${streak} Day Streak`;
+        }
+
+        /* ==========================================================================
+           FULL ANALYTICS PAGE CHARTS
+           ========================================================================== */
+        let anaBarChartInstance = null;
+
+        function renderAnalytics() {
+            switchAnalyticsPeriod('week');
+            render24HourTimeline();
+            renderHeatmap();
+        }
+
+        function switchAnalyticsPeriod(period) {
+            const btnWeek = document.getElementById('tabAnaWeek');
+            const btnMonth = document.getElementById('tabAnaMonth');
+
+            if (period === 'week') {
+                btnWeek.className = "px-4 py-1.5 rounded-xl text-xs font-bold bg-sage-100 text-sage-700";
+                btnMonth.className = "px-4 py-1.5 rounded-xl text-xs font-bold text-gray-500";
+                renderBarChart7Days();
+            } else {
+                btnMonth.className = "px-4 py-1.5 rounded-xl text-xs font-bold bg-sage-100 text-sage-700";
+                btnWeek.className = "px-4 py-1.5 rounded-xl text-xs font-bold text-gray-500";
+                renderBarChartMonth();
+            }
+        }
+
+        function renderBarChart7Days() {
+            document.getElementById('anaChartTitle').textContent = "7-Day Study Duration";
+            const ctx = document.getElementById('anaBarChart').getContext('2d');
+            
+            const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            const hoursData = [0, 0, 0, 0, 0, 0, 0];
+
+            // Map sessions to past 7 days
+            const now = new Date();
+            appData.sessions.forEach(s => {
+                const diffDays = Math.floor((now - new Date(s.timestamp)) / (1000 * 60 * 60 * 24));
+                if (diffDays < 7) {
+                    const dayIdx = (new Date(s.timestamp).getDay() + 6) % 7;
+                    hoursData[dayIdx] += s.durationSec / 3600;
+                }
+            });
+
+            if (anaBarChartInstance) anaBarChartInstance.destroy();
+
+            anaBarChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: days,
+                    datasets: [{
+                        label: 'Hours Studied',
+                        data: hoursData.map(h => h.toFixed(1)),
+                        backgroundColor: '#a3c9a8',
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#f1f5f2' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+            // Update stats
+            const weekTotal = hoursData.reduce((a,b)=>a+b, 0);
+            document.getElementById('cmpWeek').textContent = `${weekTotal.toFixed(1)}h`;
+            document.getElementById('cmpAvg').textContent = `${(weekTotal / 7).toFixed(1)}h`;
+        }
+
+        function renderBarChartMonth() {
+            document.getElementById('anaChartTitle').textContent = "Monthly Study Summary (30 Days)";
+            // Similar bar grouping by 4 weeks
+        }
+
+        function render24HourTimeline() {
+            const container = document.getElementById('timeline24Hours');
+            container.innerHTML = '';
+            
+            const hourlyActivity = new Array(24).fill(0);
+            getTodaySessions().forEach(s => {
+                const hour = new Date(s.timestamp).getHours();
+                hourlyActivity[hour] += s.durationSec;
+            });
+
+            for (let i = 0; i < 24; i++) {
+                const hasActivity = hourlyActivity[i] > 0;
+                const cell = document.createElement('div');
+                cell.className = "flex flex-col items-center gap-1";
+                cell.innerHTML = `
+                    <div class="w-full h-12 rounded-lg ${hasActivity ? 'bg-sage-400' : 'bg-sage-50'}"></div>
+                    <span>${i}h</span>
+                `;
+                container.appendChild(cell);
+            }
+        }
+
+        function renderHeatmap() {
+            const container = document.getElementById('monthlyHeatmap');
+            container.innerHTML = '';
+
+            for (let day = 1; day <= 31; day++) {
+                const cell = document.createElement('div');
+                cell.className = "h-6 rounded bg-sage-100 hover:bg-sage-300 transition cursor-pointer flex items-center justify-center text-[10px] font-bold text-sage-700";
+                cell.textContent = day;
+                container.appendChild(cell);
+            }
+        }
+
+        /* ==========================================================================
+           TASKS & PLANNER MODULE
+           ========================================================================== */
+        let currentPlannerFilter = 'all';
+
+        function renderTasks() {
+            const container = document.getElementById('taskListContainer');
+            container.innerHTML = '';
+
+            let filtered = appData.tasks;
+            if (currentPlannerFilter === 'completed') filtered = appData.tasks.filter(t => t.completed);
+            if (currentPlannerFilter === 'today') filtered = appData.tasks.filter(t => !t.completed);
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12 bg-white rounded-3xl border border-sage-100">
+                        <span class="text-3xl">🌱</span>
+                        <p class="text-xs text-gray-400 mt-2">Nothing planned yet. Click "+ Add New Task" to begin!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            filtered.forEach(task => {
+                const subj = appData.subjects.find(s => s.id === task.subjectId);
+                const el = document.createElement('div');
+                el.className = `p-4 rounded-2xl bg-white border border-sage-100 shadow-sm flex items-center justify-between gap-3 ${task.completed ? 'opacity-60' : ''}`;
+                el.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask('${task.id}')" class="w-4 h-4 rounded accent-sage-400">
+                        <div>
+                            <h4 class="text-sm font-bold ${task.completed ? 'line-through text-gray-400' : 'text-sage-700'}">${task.title}</h4>
+                            <div class="flex items-center gap-2 mt-1">
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold" style="background-color: ${subj ? subj.color + '33' : '#f1f5f2'}">
+                                    ${subj ? subj.name : 'General'}
+                                </span>
+                                <span class="text-[10px] text-gray-400">${task.date || 'Today'}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="deleteTask('${task.id}')" class="text-gray-300 hover:text-blush-400 transition text-xs"><i class="fa-solid fa-trash"></i></button>
+                `;
+                container.appendChild(el);
+            });
+        }
+
+        function toggleTask(id) {
+            const task = appData.tasks.find(t => t.id === id);
+            if (task) {
+                task.completed = !task.completed;
+                saveData();
+                renderTasks();
+                renderDashboard();
+            }
+        }
+
+        function deleteTask(id) {
+            appData.tasks = appData.tasks.filter(t => t.id !== id);
+            saveData();
+            renderTasks();
+            renderDashboard();
+        }
+
+        function openAddTaskModal() {
+            const select = document.getElementById('newTaskSubject');
+            select.innerHTML = appData.subjects.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+            document.getElementById('addTaskModal').classList.remove('hidden');
+        }
+
+        function closeAddTaskModal() {
+            document.getElementById('addTaskModal').classList.add('hidden');
+        }
+
+        function saveNewTask() {
+            const title = document.getElementById('newTaskTitle').value.trim();
+            if (!title) return;
+
+            appData.tasks.push({
+                id: 'task-' + Date.now(),
+                title: title,
+                subjectId: document.getElementById('newTaskSubject').value,
+                date: document.getElementById('newTaskDate').value || new Date().toISOString().split('T')[0],
+                priority: document.getElementById('newTaskPriority').value,
+                completed: false
+            });
+
+            saveData();
+            closeAddTaskModal();
+            renderTasks();
+            renderDashboard();
+        }
+
+        function filterTasks(type) {
+            currentPlannerFilter = type;
+            renderTasks();
+        }
+
+        function shiftPlannerDate(days) {
+            // Soft day shifting placeholder
+        }
+
+        /* ==========================================================================
+           SUBJECTS MANAGER LOGIC
+           ========================================================================== */
+        function renderSubjects() {
+            const container = document.getElementById('subjectsGrid');
+            container.innerHTML = '';
+
+            appData.subjects.forEach(subj => {
+                const card = document.createElement('div');
+                card.className = "p-5 rounded-3xl bg-white border border-sage-100 shadow-sm flex flex-col justify-between space-y-4";
+                card.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-2xl flex items-center justify-center text-white font-bold" style="background-color: ${subj.color}">
+                                📚
+                            </div>
+                            <h4 class="font-bold text-sage-700 text-sm">${subj.name}</h4>
+                        </div>
+                        <button onclick="deleteSubject('${subj.id}')" class="text-gray-300 hover:text-blush-400 text-xs"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                    <div class="text-xs text-gray-400">
+                        Total Sessions: ${appData.sessions.filter(s => s.subjectId === subj.id).length}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function openAddSubjectModal() {
+            const name = prompt('Enter new subject name:', 'Chemistry');
+            if (name) {
+                appData.subjects.push({
+                    id: 'subj-' + Date.now(),
+                    name: name,
+                    color: '#' + Math.floor(Math.random()*16777215).toString(16)
+                });
+                saveData();
+                renderSubjects();
+                renderTimerSubjectPills();
+            }
+        }
+
+        function deleteSubject(id) {
+            if (appData.subjects.length <= 1) {
+                alert('You must keep at least one subject!');
+                return;
+            }
+            appData.subjects = appData.subjects.filter(s => s.id !== id);
+            saveData();
+            renderSubjects();
+            renderTimerSubjectPills();
+        }
+
+        /* ==========================================================================
+           REWARD & BREAK SYSTEM LOGIC
+           ========================================================================== */
+        function toggleRewardInputs() {
+            const type = document.getElementById('rewardTypeSelect').value;
+            document.getElementById('rewardInputYoutube').classList.toggle('hidden', type !== 'youtube');
+            document.getElementById('rewardInputPhoto').classList.toggle('hidden', type !== 'photo');
+            document.getElementById('rewardInputMessage').classList.toggle('hidden', type !== 'message');
+        }
+
+        function saveRewardSettings() {
+            appData.rewards.type = document.getElementById('rewardTypeSelect').value;
+            appData.rewards.youtubeUrl = document.getElementById('rewardYoutubeUrl').value;
+            appData.rewards.photoUrl = document.getElementById('rewardPhotoUrl').value;
+            appData.rewards.message = document.getElementById('rewardCustomText').value;
+            saveData();
+            alert('Reward settings saved! ✨');
+        }
+
+        function getYouTubeEmbedUrl(url) {
+            if (!url) return '';
+            let videoId = '';
+            if (url.includes('youtu.be/')) videoId = url.split('youtu.be/')[1].split('?')[0];
+            else if (url.includes('youtube.com/watch?v=')) videoId = url.split('v=')[1].split('&')[0];
+            else if (url.includes('youtube.com/embed/')) videoId = url.split('embed/')[1].split('?')[0];
+            return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1` : url;
+        }
+
+        function triggerRewardModal() {
+            const modal = document.getElementById('rewardModal');
+            const embedBox = document.getElementById('rewardModalEmbed');
+            modal.classList.remove('hidden');
+
+            const r = appData.rewards;
+            if (r.type === 'youtube') {
+                const embedUrl = getYouTubeEmbedUrl(r.youtubeUrl);
+                embedBox.innerHTML = `<iframe src="${embedUrl}" class="w-full h-full border-0 rounded-2xl" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+            } else if (r.type === 'photo') {
+                embedBox.innerHTML = `<img src="${r.photoUrl || 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc'}" class="max-h-64 rounded-2xl object-cover">`;
+            } else {
+                embedBox.innerHTML = `<div class="p-6 text-center font-cute text-2xl text-sage-700">${r.message}</div>`;
+            }
+        }
+
+        function closeRewardModal() {
+            document.getElementById('rewardModal').classList.add('hidden');
+            document.getElementById('rewardModalEmbed').innerHTML = '';
+        }
+
+        function checkGoalCelebration() {
+            const todaySecs = getTodaySessions().reduce((a,b)=>a+b.durationSec, 0);
+            if (todaySecs / 3600 >= appData.profile.dailyGoalHours) {
+                confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+            }
+        }
+
+        /* ==========================================================================
+           JOURNAL LOGIC
+           ========================================================================== */
+        function renderJournal() {
+            const container = document.getElementById('thoughtsGrid');
+            container.innerHTML = '';
+
+            if (appData.thoughts.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full text-center py-12 bg-white rounded-3xl border border-sage-100">
+                        <span class="text-3xl">📝</span>
+                        <p class="text-xs text-gray-400 mt-2">Your little thoughts will live here. Write your first note!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            appData.thoughts.forEach(t => {
+                const card = document.createElement('div');
+                card.className = "p-5 rounded-3xl bg-white border border-sage-100 shadow-sm space-y-3 flex flex-col justify-between";
+                card.innerHTML = `
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <h4 class="font-bold text-sage-700 text-sm">${t.title}</h4>
+                            <button onclick="deleteThought('${t.id}')" class="text-gray-300 hover:text-blush-400 text-xs"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                        <p class="text-xs text-gray-600 leading-relaxed font-cute text-base">${t.body}</p>
+                    </div>
+                    <span class="text-[10px] text-gray-400 block">${new Date(t.timestamp).toLocaleDateString()}</span>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function openNewThoughtModal() {
+            document.getElementById('newThoughtModal').classList.remove('hidden');
+        }
+
+        function closeNewThoughtModal() {
+            document.getElementById('newThoughtModal').classList.add('hidden');
+        }
+
+        function saveNewThought() {
+            const title = document.getElementById('newThoughtTitle').value.trim();
+            const body = document.getElementById('newThoughtBody').value.trim();
+            if (!title || !body) return;
+
+            appData.thoughts.push({
+                id: 'thought-' + Date.now(),
+                title: title,
+                body: body,
+                timestamp: Date.now()
+            });
+
+            saveData();
+            closeNewThoughtModal();
+            renderJournal();
+            renderDashboard();
+        }
+
+        function deleteThought(id) {
+            appData.thoughts = appData.thoughts.filter(t => t.id !== id);
+            saveData();
+            renderJournal();
+            renderDashboard();
+        }
+
+        /* ==========================================================================
+           SHARE POST CARD GENERATION
+           ========================================================================== */
+        function openShareModal() {
+            document.getElementById('shareModal').classList.remove('hidden');
+            const totalSecs = getTodaySessions().reduce((a,b)=>a+b.durationSec, 0);
+            const h = Math.floor(totalSecs / 3600);
+            const m = Math.floor((totalSecs % 3600) / 60);
+
+            document.getElementById('shareCardHours').textContent = `${String(h).padStart(2,'0')}h ${String(m).padStart(2,'0')}m`;
+            document.getElementById('shareCardAuthor').textContent = appData.profile.name;
+        }
+
+        function closeShareModal() {
+            document.getElementById('shareModal').classList.add('hidden');
+        }
+
+        function downloadShareCard() {
+            const card = document.getElementById('shareableCard');
+            html2canvas(card).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `study-summary-${new Date().toISOString().split('T')[0]}.png`;
+                link.href = canvas.toDataURL();
+                link.click();
+            });
+        }
+
+        /* ==========================================================================
+           SETTINGS & DATA MANAGEMENT
+           ========================================================================== */
+        function saveGeneralSettings() {
+            appData.profile.name = document.getElementById('settingDisplayName').value.trim() || 'Shahu';
+            appData.profile.dailyGoalHours = parseInt(document.getElementById('settingDailyGoalHours').value) || 4;
+            appData.profile.breakMins = parseInt(document.getElementById('settingBreakMins').value) || 10;
+            saveData();
+            renderDashboard();
+            alert('Settings saved! 🌱');
+        }
+
+        function exportDataJSON() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData, null, 2));
+            const dlAnchor = document.createElement('a');
+            dlAnchor.setAttribute("href", dataStr);
+            dlAnchor.setAttribute("download", `study_nook_backup_${Date.now()}.json`);
+            document.body.appendChild(dlAnchor);
+            dlAnchor.click();
+            dlAnchor.remove();
+        }
+
+        function importDataJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    appData = JSON.parse(e.target.result);
+                    saveData();
+                    location.reload();
+                } catch (err) {
+                    alert('Invalid JSON file');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function confirmResetData() {
+            if (confirm('Are you sure you want to reset all study logs and data?')) {
+                localStorage.removeItem(STORAGE_KEY);
+                location.reload();
+            }
+        }
+
+        /* ==========================================================================
+           INITIALIZATION ON LOAD
+           ========================================================================== */
+        window.onload = function() {
+            // Restore Settings Inputs
+            document.getElementById('settingDisplayName').value = appData.profile.name;
+            document.getElementById('settingDailyGoalHours').value = appData.profile.dailyGoalHours;
+            document.getElementById('settingBreakMins').value = appData.profile.breakMins;
+
+            renderTimerSubjectPills();
+            renderDashboard();
+            updateTimerUI();
+
+            // Auto-resume timer tick if active session restored
+            if (appData.timerState.isRunning && !appData.timerState.isPaused) {
+                startTimerTick();
+            }
+        };
+    </script>
+</body>
+</html>
